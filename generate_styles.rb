@@ -63,7 +63,7 @@ def title_to_styleID(title)
   styleID
 end
 
-options = { directory: nil, replace: false }
+options = { directory: nil, sync: false }
 
 parser = OptionParser.new do|opts|
   opts.banner = 'Usage: generate_styles.rb [options]'
@@ -71,14 +71,14 @@ parser = OptionParser.new do|opts|
     options[:directory] = directory
   end
 
-  opts.on('-r', '--replace [LIMITED_TO]', %w(additions deletions modifications),
-          'Replace styles in "styles" repo, optionally limited to: "[a]dditions", "[d]eletions", "[m]odifications"') do |replace_type|
-    options[:replace] = true
-    options[:replace_type] = replace_type || ''
+  opts.on('-s', '--sync [LIMITED_TO]', %w(additions deletions modifications),
+          'Sync style changes to "styles" repo, optionally limited to: "[a]dditions", "[d]eletions", "[m]odifications"') do |sync_type|
+    options[:sync] = true
+    options[:sync_type] = sync_type || ''
   end
 
-  opts.on('-f', '--force', 'Force replace (by default, styles that only differ in their timestamp are not replaced)') do |_force_replace|
-    options[:force_replace] = true
+  opts.on('-f', '--force', 'Force sync (by default, styles that only differ in their timestamp are not updated)') do |_force_sync|
+    options[:force_sync] = true
   end
 
   opts.on('-h', '--help', 'Show help') do
@@ -110,20 +110,20 @@ else
   end
 end
 
-# determine whether styles can be replaced
-replace_styles = false
-if options[:replace] == true
+# determine whether styles can be synced
+sync_styles = false
+if options[:sync] == true
 
   # check presence style dependents folder
   Dependent_dir_path = File.expand_path('../styles/dependent', This_script_dir)
   if File.exist? Dependent_dir_path
-    replace_styles = true
+    sync_styles = true
 
     do_additions = false
     do_deletions = false
     do_modifications = false
 
-    case options[:replace_type]
+    case options[:sync_type]
     when 'additions'
       do_additions = true
     when 'deletions'
@@ -136,13 +136,13 @@ if options[:replace] == true
       do_modifications = true
     end
 
-    do_force_replace = false
-    do_force_replace = true if options[:force_replace] == true
+    do_force_sync = false
+    do_force_sync = true if options[:force_sync] == true
 
     deleted_styles = 0
     copied_styles = 0
   else
-    $stderr.puts "WARNING: Can't replace styles. Target directory not found at '#{Dependent_dir_path}'"
+    $stderr.puts "WARNING: Can't sync styles. Target directory not found at '#{Dependent_dir_path}'"
     abort 'Failed'
   end
 end
@@ -326,7 +326,7 @@ data_subdir_paths.each do |data_subdir|
 
   identifiers_master_list += identifiers
 
-  if replace_styles == true
+  if sync_styles == true
     old_identifiers = []
 
     dependents_path = "#{Dependent_dir_path}/*.csl"
@@ -352,7 +352,7 @@ data_subdir_paths.each do |data_subdir|
       if do_additions and !old_identifiers.include?(new_identifier)
         write = true
       elsif do_modifications and old_identifiers.include?(new_identifier)
-        if do_force_replace == true
+        if do_force_sync == true
           write = true
         else
           # read old and new style
@@ -399,7 +399,7 @@ data_subdir_paths.each do |data_subdir|
   total_count_created_styles += count_created_styles
 end
 
-if replace_styles == true
+if sync_styles == true
   $stderr.puts "Deleted #{deleted_styles} styles from #{Dependent_dir_path}"
   $stderr.puts "Copied #{copied_styles} styles to #{Dependent_dir_path}"
 end
