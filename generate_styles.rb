@@ -148,7 +148,7 @@ if options[:sync] == true
 end
 
 # start with new empty style directory
-generated_style_dir_path = "#{This_script_dir}/dependent"
+generated_style_dir_path = "#{This_script_dir}/_dependent"
 `rm -R '#{generated_style_dir_path}'` if File.exist? generated_style_dir_path
 $stderr.puts "Output:\t#{generated_style_dir_path}"
 $stderr.puts "\n"
