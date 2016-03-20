@@ -115,7 +115,7 @@ replace_styles = false
 if options[:replace] == true
 
   # check presence style dependents folder
-  Dependent_dir_path = File.expand_path('../../styles/dependent', This_script_dir)
+  Dependent_dir_path = File.expand_path('../styles/dependent', This_script_dir)
   if File.exist? Dependent_dir_path
     replace_styles = true
 
